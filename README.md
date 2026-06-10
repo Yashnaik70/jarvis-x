@@ -67,6 +67,19 @@ Build a modular, voice-first, extensible AI operating system for a single user.
 - `GET /api/automation/list` - list available automation workflows
 - `POST /api/automation/run` - trigger a named automation workflow
 
+## Testing and CI
+
+- Install the backend test requirements:
+  ```powershell
+  pip install -r backend/requirements.txt
+  ```
+- Run tests locally from the project root:
+  ```powershell
+  cd backend
+  pytest -q
+  ```
+- GitHub Actions will run the same tests on `main` push and PRs via `.github/workflows/python-app.yml`.
+
 ## Next steps
 
 - Add voice layer integration
