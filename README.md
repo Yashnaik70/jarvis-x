@@ -22,10 +22,18 @@ Build a modular, voice-first, extensible AI operating system for a single user.
    ```powershell
    pip install -r backend/requirements.txt
    ```
-3. Run the backend
+3. Create a `.env` file in `backend/` with your SerpAPI key:
+   ```text
+   SERPAPI_KEY=your_serpapi_key_here
+   ```
+4. Run the backend
    ```powershell
    uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
    ```
+
+## Search Integration
+- `search_web` is now implemented with SerpAPI.
+- Use the dashboard at `GET /dashboard` and the Web search card to query the internet directly.
 
 ## API Endpoints
 

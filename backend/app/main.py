@@ -62,6 +62,12 @@ async def dashboard_page():
                 <pre id="tools">Press the button to list available tools.</pre>
             </div>
             <div class="card">
+                <h2>Web search</h2>
+                <input id="webSearchQuery" type="text" placeholder="Search the web" style="width: calc(100% - 122px); padding: 10px; border-radius: 8px; border: 1px solid #2f436f; background: #0f1730; color: #e6eef8;" />
+                <button class="button" onclick="executeWebSearch()" style="margin-top: 10px;">Search</button>
+                <pre id="webSearchResult">Enter a query and click Search to use the SerpAPI web search tool.</pre>
+            </div>
+            <div class="card">
                 <h2>Tool executor</h2>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <input id="toolName" type="text" placeholder="Tool name" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #2f436f; background: #0f1730; color: #e6eef8;" />
@@ -166,6 +172,20 @@ async def dashboard_page():
                 });
                 const data = await response.json();
                 document.getElementById('toolResult').innerText = JSON.stringify(data, null, 2);
+            }
+            async function executeWebSearch() {
+                const query = document.getElementById('webSearchQuery').value.trim();
+                if (!query) {
+                    document.getElementById('webSearchResult').innerText = 'Please enter a search query.';
+                    return;
+                }
+                const response = await fetch('/api/tool/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tool_name: 'search_web', parameters: { query } })
+                });
+                const data = await response.json();
+                document.getElementById('webSearchResult').innerText = JSON.stringify(data, null, 2);
             }
             async function addMemory() {
                 const key = document.getElementById('memoryKey').value.trim();

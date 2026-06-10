@@ -1,7 +1,12 @@
 import os
-import os
 import platform
 from typing import Any, Dict, Callable, List
+import requests
+from dotenv import load_dotenv
+
+# Load environment variables from backend/.env
+load_dotenv()
+SERPAPI_KEY = os.getenv("SERPAPI_KEY", "")
 
 class ToolRegistry:
     def __init__(self):
@@ -79,8 +84,24 @@ class ToolRegistry:
         query = parameters.get("query")
         if not query:
             return {"status": "error", "message": "Missing query parameter."}
-        return {
-            "status": "success",
-            "query": query,
-            "message": "Web search placeholder. Replace this with a real search API integration."
-        }
+        if not SERPAPI_KEY:
+            return {"status": "error", "message": "SERPAPI_KEY not set in environment."}
+
+        try:
+            url = "https://serpapi.com/search.json"
+            params = {"q": query, "api_key": SERPAPI_KEY}
+            resp = requests.get(url, params=params, timeout=10)
+            if resp.status_code != 200:
+                return {"status": "error", "message": f"Search API error: {resp.status_code}", "details": resp.text}
+            data = resp.json()
+            organic = data.get("organic_results") or data.get("organic") or []
+            results = []
+            for r in organic[:8]:
+                results.append({
+                    "title": r.get("title") or r.get("position"),
+                    "link": r.get("link") or r.get("url"),
+                    "snippet": r.get("snippet") or r.get("snippet_text")
+                })
+            return {"status": "success", "query": query, "results": results}
+        except Exception as exc:
+            return {"status": "error", "message": str(exc)}
