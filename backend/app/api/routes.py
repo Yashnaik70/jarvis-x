@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Header, status
+from ..core.config import settings
 from ..models import (
     AgentExecuteRequest,
     ApprovalDecisionRequest,
@@ -9,6 +10,8 @@ from ..models import (
     MemoryQueryRequest,
     ToolExecuteRequest,
     VoiceCommandRequest,
+    VoiceTranscribeRequest,
+    VoiceTTSRequest,
 )
 from ..services.agents import AgentSystem
 from ..services.automation import AutomationEngine
@@ -18,7 +21,25 @@ from ..services.security import ApprovalSystem
 from ..services.tools import ToolExecutionLayer
 from ..services.voice import VoiceSystem
 
-router = APIRouter(prefix="/api")
+def verify_api_key(
+    x_api_key: str | None = Header(None, alias="X-API-Key"),
+    authorization: str | None = Header(None, alias="Authorization")
+):
+    if not settings.jarvisx_api_key or settings.jarvisx_api_key.strip().lower().startswith("your_"):
+        return
+    token = None
+    if authorization and authorization.lower().startswith("bearer "):
+        token = authorization[7:].strip()
+    elif x_api_key:
+        token = x_api_key
+    if token != settings.jarvisx_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing API key.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+router = APIRouter(prefix="/api", dependencies=[Depends(verify_api_key)])
 
 memory = MemorySystem()
 agents = AgentSystem()
@@ -130,6 +151,16 @@ async def voice_command(request: VoiceCommandRequest):
             "tool_result": execution
         }
     return {"status": "received", "command": parsed, "result": result}
+
+
+@router.post("/voice/transcribe")
+async def voice_transcribe(request: VoiceTranscribeRequest):
+    return voice.transcribe_audio(request.audio_base64)
+
+
+@router.post("/voice/tts")
+async def voice_tts(request: VoiceTTSRequest):
+    return voice.generate_speech(request.text, request.lang)
 
 
 @router.get("/dashboard/overview")

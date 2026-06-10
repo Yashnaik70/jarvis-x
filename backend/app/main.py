@@ -51,6 +51,15 @@ async def dashboard_page():
                 <pre id="voice">Press the button to check voice status.</pre>
             </div>
             <div class="card">
+                <h2>Voice STT / TTS</h2>
+                <input id="ttsText" type="text" placeholder="Text to speak" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #2f436f; background: #0f1730; color: #e6eef8; margin-bottom: 10px;" />
+                <button class="button" onclick="generateSpeech()">Generate speech</button>
+                <pre id="ttsResult">Enter text and click Generate speech.</pre>
+                <input id="sttFile" type="file" accept="audio/wav" style="width: 100%; margin-top: 10px;" />
+                <button class="button" onclick="transcribeAudio()" style="margin-top: 10px;">Transcribe WAV</button>
+                <pre id="sttResult">Upload a WAV file and click Transcribe WAV.</pre>
+            </div>
+            <div class="card">
                 <h2>Memory search</h2>
                 <input id="memoryQuery" type="text" placeholder="Search memory" style="width: calc(100% - 122px); padding: 10px; border-radius: 8px; border: 1px solid #2f436f; background: #0f1730; color: #e6eef8;" />
                 <button class="button" onclick="searchMemory()" style="margin-top: 10px;">Search</button>
@@ -133,6 +142,49 @@ async def dashboard_page():
                 const response = await fetch('/api/voice/status');
                 const data = await response.json();
                 document.getElementById('voice').innerText = JSON.stringify(data, null, 2);
+            }
+            async function generateSpeech() {
+                const text = document.getElementById('ttsText').value.trim();
+                if (!text) {
+                    document.getElementById('ttsResult').innerText = 'Please enter text to speak.';
+                    return;
+                }
+                const response = await fetch('/api/voice/tts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, lang: 'en' })
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    const audio = new Audio('data:audio/mpeg;base64,' + data.audio_base64);
+                    audio.play();
+                    document.getElementById('ttsResult').innerText = 'Speech generated and playing in browser.';
+                } else {
+                    document.getElementById('ttsResult').innerText = JSON.stringify(data, null, 2);
+                }
+            }
+            async function transcribeAudio() {
+                const fileInput = document.getElementById('sttFile');
+                if (!fileInput.files.length) {
+                    document.getElementById('sttResult').innerText = 'Please choose a WAV file.';
+                    return;
+                }
+                const file = fileInput.files[0];
+                const arrayBuffer = await file.arrayBuffer();
+                let binary = '';
+                const bytes = new Uint8Array(arrayBuffer);
+                const chunkSize = 0x8000;
+                for (let i = 0; i < bytes.length; i += chunkSize) {
+                    binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+                }
+                const base64 = btoa(binary);
+                const response = await fetch('/api/voice/transcribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ audio_base64: base64 })
+                });
+                const data = await response.json();
+                document.getElementById('sttResult').innerText = JSON.stringify(data, null, 2);
             }
             async function searchMemory() {
                 const query = document.getElementById('memoryQuery').value;

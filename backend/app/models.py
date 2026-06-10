@@ -7,6 +7,13 @@ class CommandRequest(BaseModel):
 class VoiceCommandRequest(BaseModel):
     command: str
 
+class VoiceTranscribeRequest(BaseModel):
+    audio_base64: str
+
+class VoiceTTSRequest(BaseModel):
+    text: str
+    lang: str = "en"
+
 class MemoryAddRequest(BaseModel):
     key: str
     value: str

@@ -22,9 +22,10 @@ Build a modular, voice-first, extensible AI operating system for a single user.
    ```powershell
    pip install -r backend/requirements.txt
    ```
-3. Create a `.env` file in `backend/` with your SerpAPI key:
+3. Create a `.env` file in `backend/` with your SerpAPI and JARVIS-X API key:
    ```text
    SERPAPI_KEY=your_serpapi_key_here
+   JARVISX_API_KEY=your_jarvisx_api_key_here
    ```
 4. Run the backend
    ```powershell
@@ -34,6 +35,10 @@ Build a modular, voice-first, extensible AI operating system for a single user.
 ## Search Integration
 - `search_web` is now implemented with SerpAPI.
 - Use the dashboard at `GET /dashboard` and the Web search card to query the internet directly.
+
+## API Key protection
+- If `JARVISX_API_KEY` is set in `backend/.env`, all `/api/*` endpoints require an API key.
+- Use either the `Authorization: Bearer <key>` header or `X-API-Key: <key>`.
 
 ## API Endpoints
 
@@ -46,6 +51,8 @@ Build a modular, voice-first, extensible AI operating system for a single user.
 - `POST /api/memory/query` - look up a memory item
 - `GET /api/voice/status` - get voice subsystem status
 - `POST /api/voice/command` - send a voice command to the brain
+- `POST /api/voice/transcribe` - send base64 WAV audio for transcription
+- `POST /api/voice/tts` - convert text to speech and return MP3 audio
 - `GET /api/dashboard/overview` - get a system dashboard overview
 - `GET /dashboard` - access the web dashboard UI
 - `POST /api/brain/execute` - execute a brain command and run tool actions when possible
