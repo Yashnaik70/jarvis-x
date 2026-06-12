@@ -107,6 +107,25 @@ async def execute_brain_command(request: CommandRequest):
     return {"action": result.get("action"), "result": result}
 
 
+# Compatibility endpoints for frontend `assistant` path
+@router.post("/assistant/command")
+async def assistant_command(request: CommandRequest):
+    return brain.process_command(request.command)
+
+
+@router.post("/assistant/execute")
+async def assistant_execute(request: CommandRequest):
+    result = brain.process_command(request.command)
+    if result.get("action") == "tool":
+        execution = tool_engine.execute_tool(result.get("tool"), result.get("parameters", {}))
+        return {
+            "action": "tool_execution",
+            "brain_result": result,
+            "tool_result": execution
+        }
+    return {"action": result.get("action"), "result": result}
+
+
 @router.post("/memory/add")
 async def memory_add(request: MemoryAddRequest):
     memory.add_memory(request.key, request.value)

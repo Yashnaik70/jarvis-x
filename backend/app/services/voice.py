@@ -4,7 +4,6 @@ import os
 import tempfile
 from typing import Any
 
-import speech_recognition as sr
 from gtts import gTTS
 
 class VoiceSystem:
@@ -25,13 +24,29 @@ class VoiceSystem:
 
     def transcribe_audio(self, audio_base64: str) -> dict:
         try:
+            # Import locally to avoid optional dependency failures at startup
+            try:
+                import speech_recognition as sr
+            except ModuleNotFoundError:
+                return {"status": "error", "message": "Speech recognition library not installed."}
+
             audio_bytes = base64.b64decode(audio_base64)
             audio_stream = io.BytesIO(audio_bytes)
             recognizer = sr.Recognizer()
-            with sr.AudioFile(audio_stream) as source:
-                audio_data = recognizer.record(source)
-            transcript = recognizer.recognize_google(audio_data)
-            return {"status": "success", "text": transcript}
+            # speech_recognition expects a real file-like object; write to a temp file
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
+                tmp_file.write(audio_bytes)
+                tmp_path = tmp_file.name
+            try:
+                with sr.AudioFile(tmp_path) as source:
+                    audio_data = recognizer.record(source)
+                transcript = recognizer.recognize_google(audio_data)
+                return {"status": "success", "text": transcript}
+            finally:
+                try:
+                    os.remove(tmp_path)
+                except Exception:
+                    pass
         except sr.UnknownValueError:
             return {"status": "error", "message": "Audio could not be transcribed."}
         except sr.RequestError as exc:

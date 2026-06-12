@@ -1,12 +1,7 @@
-import os
 import platform
 from typing import Any, Dict, Callable, List
 import requests
-from dotenv import load_dotenv
-
-# Load environment variables from backend/.env
-load_dotenv()
-SERPAPI_KEY = os.getenv("SERPAPI_KEY", "")
+from ..core.config import settings
 
 class ToolRegistry:
     def __init__(self):
@@ -84,12 +79,12 @@ class ToolRegistry:
         query = parameters.get("query")
         if not query:
             return {"status": "error", "message": "Missing query parameter."}
-        if not SERPAPI_KEY:
+        if not settings.serpapi_key:
             return {"status": "error", "message": "SERPAPI_KEY not set in environment."}
 
         try:
             url = "https://serpapi.com/search.json"
-            params = {"q": query, "api_key": SERPAPI_KEY}
+            params = {"q": query, "api_key": settings.serpapi_key}
             resp = requests.get(url, params=params, timeout=10)
             if resp.status_code != 200:
                 return {"status": "error", "message": f"Search API error: {resp.status_code}", "details": resp.text}

@@ -42,10 +42,39 @@ class AIBrain:
         if "summarize" in lower_text:
             return {"action": "summarize", "message": "Summary capability is not yet implemented."}
 
+        if "3d view" in lower_text or "3d model" in lower_text or "visualization" in lower_text:
+            target = "car" if "car" in lower_text else "scene"
+            return {
+                "action": "visualize",
+                "visualization_type": target,
+                "message": f"Got it. I'm building a 3D {target} view for you now, just like Jarvis."
+            }
+
         return {
             "action": "chat",
-            "message": "JARVIS-X is listening. I can route your request to memory, agents, or tools."
+            "message": self._friend_response(text)
         }
+
+    def _friend_response(self, text: str) -> str:
+        lower_text = text.lower()
+
+        greetings = ["hello", "hi", "hey", "yo", "jarvis"]
+        if any(greeting in lower_text for greeting in greetings):
+            return "Hello there. I'm your assistant. Tell me what you'd like to do today, and I'll make it happen."
+
+        if "how are you" in lower_text or "what's up" in lower_text:
+            return "I'm running smooth and ready to help. Want me to show you a 3D model or run a command?"
+
+        if "thank" in lower_text:
+            return "Anytime. That's what I'm here for. If you want, I can show a 3D preview or open the tools panel."
+
+        if "open" in lower_text and "dashboard" in lower_text:
+            return "Sure, the dashboard is already open. Ask me to visualize something or execute a task."
+
+        if "make" in lower_text and ("3d" in lower_text or "visual" in lower_text):
+            return "Absolutely. I can visualize that for you. Just say 'make a 3D view of a car' and I'll bring it up."
+
+        return "I hear you. Ask me to create a 3D view, open apps, or run tools. I can also remember notes or search the web."
 
     def _extract_path(self, text: str) -> str:
         tokens = text.split()

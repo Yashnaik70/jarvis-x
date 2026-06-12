@@ -32,6 +32,27 @@ Build a modular, voice-first, extensible AI operating system for a single user.
    uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
    ```
 
+## React dashboard
+
+The dashboard is now implemented as a React app in `frontend/`.
+
+1. Install frontend dependencies:
+   ```powershell
+   cd frontend
+   npm install
+   ```
+2. Run the dashboard in development mode:
+   ```powershell
+   npm run dev
+   ```
+3. Build for production and serve from FastAPI:
+   ```powershell
+   npm run build
+   uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000
+   ```
+
+When the frontend is built, the backend serves the dashboard at `http://127.0.0.1:8000/dashboard/`.
+
 ## Search Integration
 - `search_web` is now implemented with SerpAPI.
 - Use the dashboard at `GET /dashboard` and the Web search card to query the internet directly.
